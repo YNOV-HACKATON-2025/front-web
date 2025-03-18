@@ -9,43 +9,118 @@ type Sensor = {
   type: string;
   unit: string;
   value: string;
-}
+};
+
+type Room = {
+  id: string;
+  name: string;
+};
 
 const Equipments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [devices, setDevices] = useState<Sensor[]>([]);
-
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null);
+
+  const fetchDevices = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("https://hackathon.vanhovev.com/sensors", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDevices(data);
+      }
+    } catch (error) {
+      alert("Erreur lors de la récupération des capteurs : " + error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch("https://hackathon.vanhovev.com/rooms", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRooms(data);
+      }
+    } catch (error) {
+      alert("Erreur lors de la récupération des pièces : " + error);
+    }
+  };
+
+  const addSensor = async (newSensor) => {
+    try {
+      const response = await fetch("https://hackathon.vanhovev.com/sensors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSensor),
+      });
+
+      if (response.ok) {
+        const addedSensor = await response.json();
+        setDevices([...devices, addedSensor]);
+        alert("Capteur ajouté avec succès !");
+      }
+    } catch (error) {
+      alert("Erreur lors de l'ajout du capteur : " + error);
+    }
+  };
+
+  const updateSensor = async (id, updatedData) => {
+    try {
+      const response = await fetch(`https://hackathon.vanhovev.com/sensors/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const updatedSensor = await response.json();
+        setDevices(devices.map((device) =>
+          device.id === id ? updatedSensor : device
+        ));
+        alert("Capteur mis à jour avec succès !");
+      }
+    } catch (error) {
+      alert("Erreur lors de la mise à jour du capteur : " + error);
+    }
+  };
+
+  const deleteSensor = async (id) => {
+    try {
+      const response = await fetch(`https://hackathon.vanhovev.com/sensors/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setDevices(devices.filter((device) => device.id !== id));
+        alert("Capteur supprimé avec succès !");
+      }
+    } catch (error) {
+      alert("Erreur lors de la suppression du capteur : " + error);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await fetch("http://localhost:3000/sensors", {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        console.log(response);
-        
-        if(response.ok) {
-          const data = await response.json();
-          
-          setDevices(data);
-        }
-      } catch (error) {
-        alert(error);
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchPosts();
+    fetchDevices();
+    fetchRooms();
   }, []);
+
+  const openEditModal = (sensor) => {
+    setSelectedSensor(sensor);
+    setIsEditModalOpen(true);
+  };
 
   return (
     <div className="w-full p-2 sm:p-4 lg:p-8 relative">
@@ -53,179 +128,230 @@ const Equipments = () => {
         <h1 className="text-2xl text-zinc-900 font-bold">
           Nos <span className="text-amber-500">Equipements</span>
         </h1>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              className="w-[300px] pr-10 pl-10 py-1.5 text-xs text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
-              placeholder="Rechercher équipement..."
-            />
-            <div className="absolute inset-y-0 left-0 flex items-center px-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4 text-gray-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </div>
-          </div>
-          <div className="relative flex border border-gray-300 rounded-md shadow-sm px-2">
-            <div className="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4 text-gray-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-              <span className="text-xs text-gray-500 ml-2">Filtrer:</span>
-            </div>
-            <select className="pl-4 pr-2 py-1.5 text-xs text-gray-700 bg-white border-none outline-none">
-              <option selected value="tous">
-                Tous
-              </option>
-              <option value="salon">Salon</option>
-              <option value="salle à manger">Salle à manger</option>
-              <option value="douche">Douche</option>
-              <option value="chambres">Chambres</option>
-              <option value="extérieur">Extérieur</option>
-            </select>
-          </div>
-          <div className="h-6 w-px bg-zinc-300"></div>
-          <button
-            type="button"
-            className="flex items-center gap-1 px-3 py-1.5 text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
-            onClick={() => setIsModalOpen(true)}
+        <button
+          type="button"
+          className="flex items-center gap-1 px-3 py-1.5 text-white bg-blue-500 hover:bg-blue-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span className="text-xs font-medium">Ajouter</span>
-          </button>
-          {isModalOpen && (
-            <Modal onClose={() => setIsModalOpen(false)}>
-              <div className="p-6 bg-white rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold mb-4">
-                  Ajouter un équipement
-                </h2>
-                <form>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Nom de l'appareil
-                    </label>
-                    <input
-                      type="text"
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Ex: Lumière Salon"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Type d'appareil
-                    </label>
-                    <select className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                      <option value="lumiere">Lumière</option>
-                      <option value="chauffage">Chauffage</option>
-                      <option value="climatisation">Climatisation</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Pièce
-                    </label>
-                    <select className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                      <option value="salon">Salon</option>
-                      <option value="chambre">Chambre</option>
-                      <option value="cuisine">Cuisine</option>
-                      <option value="salle_de_bain">Salle de bain</option>
-                      <option value="extérieur">Extérieur</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Statut
-                    </label>
-                    <select className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                      <option value="on">ON</option>
-                      <option value="off">OFF</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      ID MQTT / Topic
-                    </label>
-                    <input
-                      type="text"
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Ex: maison/salon/lumiere"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-gray-300 text-black rounded"
-                      onClick={() => setIsModalOpen(false)}
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Ajouter
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </Modal>
-          )}
-        </div>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span className="text-xs font-medium">Ajouter</span>
+        </button>
       </div>
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <div className="p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Ajouter un équipement</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const newSensor = {
+                  name: formData.get("name"),
+                  roomId: formData.get("roomId"),
+                  type: formData.get("type"),
+                  unit: formData.get("unit"),
+                  value: formData.get("value"),
+                };
+                addSensor(newSensor);
+                setIsModalOpen(false);
+              }}
+            >
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Nom de l'appareil
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex: TempSensor1"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Pièce
+                </label>
+                <select
+                  name="roomId"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  {rooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Type d'appareil
+                </label>
+                <input
+                  type="text"
+                  name="type"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex: temperature, humidity, fan, light, heating, speaker"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Unité
+                </label>
+                <input
+                  type="text"
+                  name="unit"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex: °C"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Valeur
+                </label>
+                <input
+                  type="text"
+                  name="value"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex: 25"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-gray-300 text-black rounded"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
+
+      {isEditModalOpen && selectedSensor && (
+        <Modal onClose={() => setIsEditModalOpen(false)}>
+          <div className="p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Modifier l'équipement</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const updatedData = {
+                  name: formData.get("name"),
+                  type: formData.get("type"),
+                  unit: formData.get("unit"),
+                  value: formData.get("value"),
+                };
+                updateSensor(selectedSensor.id, updatedData);
+                setIsEditModalOpen(false);
+              }}
+            >
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Nom de l'appareil
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={selectedSensor.name}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Type d'appareil
+                </label>
+                <input
+                  type="text"
+                  name="type"
+                  defaultValue={selectedSensor.type}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Unité
+                </label>
+                <input
+                  type="text"
+                  name="unit"
+                  defaultValue={selectedSensor.unit}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Valeur
+                </label>
+                <input
+                  type="text"
+                  name="value"
+                  defaultValue={selectedSensor.value}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-gray-300 text-black rounded"
+                  onClick={() => setIsEditModalOpen(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Modifier
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
 
       <div className="relative overflow-x-auto sm:rounded-lg mt-8">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="p-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-all-search"
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor="checkbox-all-search" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </th>
               <th scope="col" className="px-6 py-3">
                 ID
               </th>
@@ -236,16 +362,13 @@ const Equipments = () => {
                 Room ID
               </th>
               <th scope="col" className="px-6 py-3">
-                ID MQTT / Topic
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Valeur
+                Type
               </th>
               <th scope="col" className="px-6 py-3">
                 Unité
               </th>
               <th scope="col" className="px-6 py-3">
-                Dernière activité
+                Valeur
               </th>
               <th scope="col" className="px-6 py-3">
                 Actions
@@ -253,168 +376,65 @@ const Equipments = () => {
             </tr>
           </thead>
           <tbody>
-            {devices !== null ? (
-              devices.map((device) => (
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="w-4 p-4">
-                    <div className="flex items-center">
-                      <input
-                        id="checkbox-table-search-1"
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                      />
-                      <label htmlFor="checkbox-table-search-1" className="sr-only">
-                        checkbox
-                      </label>
-                    </div>
-                  </td>
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                  >
-                    {device.id}
-                  </th>
-                  <td className="px-6 py-4">{device.name}</td>
-                  <td className="px-6 py-4">{device.roomId}</td>
-                  <td className="px-6 py-4">{device.topic}</td>
-                  <td className="px-6 py-4">{device.type}</td>
-                  <td className="px-6 py-4">{device.unit}</td>
-                  <td className="px-6 py-4">{device.value}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4 flex-shrink-0 align-middle"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-                          <path d="m15 5 4 4" />
-                        </svg>
-                      </button>
-                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4 flex-shrink-0 align-middle"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                          <line x1="10" x2="10" y1="11" y2="17" />
-                          <line x1="14" x2="14" y1="11" y2="17" />
-                        </svg>
-                      </button>
-                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4 flex-shrink-0 align-middle"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="m4.9 4.9 14.2 14.2" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
+            {devices.map((device) => (
+              <tr
+                key={device.id}
+                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                <td className="px-6 py-4">{device.id}</td>
+                <td className="px-6 py-4">{device.name}</td>
+                <td className="px-6 py-4">{device.roomId}</td>
+                <td className="px-6 py-4">{device.type}</td>
+                <td className="px-6 py-4">{device.unit}</td>
+                <td className="px-6 py-4">{device.value}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditModal(device)}
+                      className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 flex-shrink-0 align-middle"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                        <path d="m15 5 4 4" />
+                      </svg>
+                    </button>
 
+                    <button
+                      onClick={() => deleteSensor(device.id)}
+                      className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 flex-shrink-0 align-middle"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <line x1="10" x2="10" y1="11" y2="17" />
+                        <line x1="14" x2="14" y1="11" y2="17" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
-        <nav
-          className="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4"
-          aria-label="Table navigation"
-        >
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
-            Affichage{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              1-10
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              1000
-            </span>
-          </span>
-          <ul className="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                Previous
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                1
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                2
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                aria-current="page"
-                className="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-              >
-                3
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                4
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                5
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              >
-                Next
-              </a>
-            </li>
-          </ul>
-        </nav>
       </div>
     </div>
   );

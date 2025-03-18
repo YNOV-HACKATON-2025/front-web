@@ -1,5 +1,5 @@
-import Salon from "./Salon";
+import Room from "./Room";
 
 export {
-    Salon,
+    Room,
 }
