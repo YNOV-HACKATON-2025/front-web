@@ -5,7 +5,7 @@ const Equipments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="w-full p-8 relative">
+    <div className="w-full p-2 sm:p-4 lg:p-8 relative">
       <div className="w-full flex justify-between items-center gap-4">
         <h1 className="text-2xl text-zinc-900 font-bold">
           Nos <span className="text-amber-500">Equipements</span>
