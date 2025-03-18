@@ -1,22 +1,27 @@
 import { useState, useEffect } from "react";
-import { roomParts } from "../constants";
 import { Room } from "../components/home-setup";
 
-const Home = () => {
-  const [rooms, setRooms] = useState([]); 
-  const [selectedRoom, setSelectedRoom] = useState(null);
+// Définir le type Room
+type Room = {
+  id: string;
+  name: string;
+  picture: string;
+};
 
+const Home = () => {
+  const [rooms, setRooms] = useState<Room[]>([]); // Tableau de Room
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null); // Room ou null
 
   useEffect(() => {
     fetch("https://hackathon.vanhovev.com/rooms/")
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         setRooms(data);
         if (data.length > 0) {
           setSelectedRoom(data[0]);
         }
       })
-      .catch(error => console.error("Erreur lors de la récupération des pièces :", error));
+      .catch((error) => console.error("Erreur lors de la récupération des pièces :", error));
   }, []);
 
   return (
@@ -31,18 +36,19 @@ const Home = () => {
             src={selectedRoom.picture}
             alt={selectedRoom.name}
             className="w-full h-full object-cover transition-transform duration-300 ease-in-out"
-            onError={(e) => { e.target.src = 'default-image-url'; }} 
+            onError={(e) => { (e.target as HTMLImageElement).src = "default-image-url"; }} // Caster e.target en HTMLImageElement
           />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/50 rounded-xl">
           <div className="w-full h-full flex flex-col justify-between items-center py-6">
             <div className="flex items-center gap-4 p-1 rounded-lg bg-zinc-900/30 shadow-sm shadow-white/10">
-              {rooms.map(room => (
+              {rooms.map((room) => (
                 <button
                   key={room.id}
-                  className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-white cursor-pointer rounded-lg ${selectedRoom?.id === room.id ? "bg-white/30" : "hover:bg-white/10"
-                    } transition-all duration-300`}
+                  className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium text-white cursor-pointer rounded-lg ${
+                    selectedRoom?.id === room.id ? "bg-white/30" : "hover:bg-white/10"
+                  } transition-all duration-300`}
                   onClick={() => setSelectedRoom(room)}
                 >
                   {room.name}
@@ -51,7 +57,7 @@ const Home = () => {
             </div>
 
             <div className="w-full flex justify-center items-center px-10">
-              {selectedRoom && <Room roomId={selectedRoom.id} roomName={selectedRoom.name} />}
+              {selectedRoom && <Room roomId={selectedRoom.id} />} {/* Supprimer roomName si non nécessaire */}
             </div>
           </div>
         </div>

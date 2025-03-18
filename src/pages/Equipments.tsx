@@ -16,16 +16,29 @@ type Room = {
   name: string;
 };
 
+type NewSensor = {
+  name: string;
+  roomId: string;
+  type: string;
+  unit: string;
+  value: string;
+};
+
+type UpdatedSensorData = {
+  name: string;
+  type: string;
+  unit: string;
+  value: string;
+};
+
 const Equipments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [devices, setDevices] = useState<Sensor[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null);
 
   const fetchDevices = async () => {
-    setIsLoading(true);
     try {
       const response = await fetch("https://hackathon.vanhovev.com/sensors", {
         method: "GET",
@@ -38,8 +51,6 @@ const Equipments = () => {
       }
     } catch (error) {
       alert("Erreur lors de la récupération des capteurs : " + error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -59,7 +70,7 @@ const Equipments = () => {
     }
   };
 
-  const addSensor = async (newSensor) => {
+  const addSensor = async (newSensor: NewSensor) => {
     try {
       const response = await fetch("https://hackathon.vanhovev.com/sensors", {
         method: "POST",
@@ -77,7 +88,7 @@ const Equipments = () => {
     }
   };
 
-  const updateSensor = async (id, updatedData) => {
+  const updateSensor = async (id: number, updatedData: UpdatedSensorData) => {
     try {
       const response = await fetch(`https://hackathon.vanhovev.com/sensors/${id}`, {
         method: "PUT",
@@ -97,7 +108,7 @@ const Equipments = () => {
     }
   };
 
-  const deleteSensor = async (id) => {
+  const deleteSensor = async (id: number) => {
     try {
       const response = await fetch(`https://hackathon.vanhovev.com/sensors/${id}`, {
         method: "DELETE",
@@ -117,7 +128,7 @@ const Equipments = () => {
     fetchRooms();
   }, []);
 
-  const openEditModal = (sensor) => {
+  const openEditModal = (sensor: Sensor) => {
     setSelectedSensor(sensor);
     setIsEditModalOpen(true);
   };
@@ -157,13 +168,13 @@ const Equipments = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const formData = new FormData(e.target);
-                const newSensor = {
-                  name: formData.get("name"),
-                  roomId: formData.get("roomId"),
-                  type: formData.get("type"),
-                  unit: formData.get("unit"),
-                  value: formData.get("value"),
+                const formData = new FormData(e.target as HTMLFormElement);
+                const newSensor: NewSensor = {
+                  name: formData.get("name") as string,
+                  roomId: formData.get("roomId") as string,
+                  type: formData.get("type") as string,
+                  unit: formData.get("unit") as string,
+                  value: formData.get("value") as string,
                 };
                 addSensor(newSensor);
                 setIsModalOpen(false);
@@ -265,12 +276,12 @@ const Equipments = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const formData = new FormData(e.target);
-                const updatedData = {
-                  name: formData.get("name"),
-                  type: formData.get("type"),
-                  unit: formData.get("unit"),
-                  value: formData.get("value"),
+                const formData = new FormData(e.target as HTMLFormElement);
+                const updatedData: UpdatedSensorData = {
+                  name: formData.get("name") as string,
+                  type: formData.get("type") as string,
+                  unit: formData.get("unit") as string,
+                  value: formData.get("value") as string,
                 };
                 updateSensor(selectedSensor.id, updatedData);
                 setIsEditModalOpen(false);

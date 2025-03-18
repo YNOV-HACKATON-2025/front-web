@@ -1,7 +1,21 @@
 import { useState, useEffect } from "react";
 
-const Room = ({ roomId, roomName }) => {
-  const [sensors, setSensors] = useState([]);
+// Define the type for the Room component's props
+interface RoomProps {
+  roomId: string;
+}
+
+// Define the type for the sensor data
+interface Sensor {
+  id: string;
+  type: string;
+  name: string;
+  value: number;
+  unit: string;
+}
+
+const Room = ({ roomId }: RoomProps) => {
+  const [sensors, setSensors] = useState<Sensor[]>([]);
 
   useEffect(() => {
     if (roomId) {
@@ -12,7 +26,7 @@ const Room = ({ roomId, roomName }) => {
     }
   }, [roomId]);
 
-  const getSensorIcon = (type) => {
+  const getSensorIcon = (type: string) => {
     switch (type) {
       case 'temperature':
         return '🌡️';
@@ -33,7 +47,7 @@ const Room = ({ roomId, roomName }) => {
     }
   };
 
-  const getSensorColor = (type) => {
+  const getSensorColor = (type: string) => {
     switch (type) {
       case 'temperature':
         return 'bg-red-500';
