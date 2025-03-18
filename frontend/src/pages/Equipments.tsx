@@ -1,8 +1,51 @@
 import Modal from "../components/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type Sensor = {
+  id: number;
+  name: string;
+  roomId: string;
+  topic: string;
+  type: string;
+  unit: string;
+  value: string;
+}
 
 const Equipments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [devices, setDevices] = useState<Sensor[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("http://localhost:3000/sensors", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(response);
+        
+        if(response.ok) {
+          const data = await response.json();
+          
+          setDevices(data);
+        }
+      } catch (error) {
+        alert(error);
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPosts();
+  }, []);
 
   return (
     <div className="w-full p-2 sm:p-4 lg:p-8 relative">
@@ -190,16 +233,16 @@ const Equipments = () => {
                 Nom appareil
               </th>
               <th scope="col" className="px-6 py-3">
-                Type
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Pièce
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Statut
+                Room ID
               </th>
               <th scope="col" className="px-6 py-3">
                 ID MQTT / Topic
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Valeur
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Unité
               </th>
               <th scope="col" className="px-6 py-3">
                 Dernière activité
@@ -210,84 +253,92 @@ const Equipments = () => {
             </tr>
           </thead>
           <tbody>
-            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
-              <td className="w-4 p-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-table-search-1"
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor="checkbox-table-search-1" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </td>
-              <th
-                scope="row"
-                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                12345
-              </th>
-              <td className="px-6 py-4">Lumière Salon</td>
-              <td className="px-6 py-4">Lumière</td>
-              <td className="px-6 py-4">Salon</td>
-              <td className="px-6 py-4">ON, 22°C</td>
-              <td className="px-6 py-4">maison/salon/lumiere</td>
-              <td className="px-6 py-4">2025-03-17 14:30</td>
-              <td className="px-6 py-4">
-                <div className="flex gap-2">
-                  <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 flex-shrink-0 align-middle"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-                      <path d="m15 5 4 4" />
-                    </svg>
-                  </button>
-                  <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 flex-shrink-0 align-middle"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                      <line x1="10" x2="10" y1="11" y2="17" />
-                      <line x1="14" x2="14" y1="11" y2="17" />
-                    </svg>
-                  </button>
-                  <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 flex-shrink-0 align-middle"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m4.9 4.9 14.2 14.2" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
+            {devices !== null ? (
+              devices.map((device) => (
+                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <td className="w-4 p-4">
+                    <div className="flex items-center">
+                      <input
+                        id="checkbox-table-search-1"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label htmlFor="checkbox-table-search-1" className="sr-only">
+                        checkbox
+                      </label>
+                    </div>
+                  </td>
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                  >
+                    {device.id}
+                  </th>
+                  <td className="px-6 py-4">{device.name}</td>
+                  <td className="px-6 py-4">{device.roomId}</td>
+                  <td className="px-6 py-4">{device.topic}</td>
+                  <td className="px-6 py-4">{device.type}</td>
+                  <td className="px-6 py-4">{device.unit}</td>
+                  <td className="px-6 py-4">{device.value}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 flex-shrink-0 align-middle"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                      </button>
+                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 flex-shrink-0 align-middle"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                          <line x1="10" x2="10" y1="11" y2="17" />
+                          <line x1="14" x2="14" y1="11" y2="17" />
+                        </svg>
+                      </button>
+                      <button className="w-7 h-7 flex justify-center items-center rounded-md border border-300 bg-white text-zinc-600">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 flex-shrink-0 align-middle"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="m4.9 4.9 14.2 14.2" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+
+              </tr>
+            )}
           </tbody>
         </table>
         <nav
