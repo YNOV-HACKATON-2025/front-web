@@ -28,7 +28,7 @@ const Home = () => {
       <div className="w-full border rounded-xl mt-4 h-[700px] relative overflow-y-scroll">
         {selectedRoom && (
           <img
-            src={selectedRoom.imageUrl}
+            src={selectedRoom.picture}
             alt={selectedRoom.name}
             className="w-full h-full object-cover transition-transform duration-300 ease-in-out"
             onError={(e) => { e.target.src = 'default-image-url'; }} 
