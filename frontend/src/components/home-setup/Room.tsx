@@ -24,7 +24,7 @@ const Room = ({ roomId, roomName }) => {
         return '💡';
       case 'camera':
         return '📷';
-      case 'heating':
+      case 'radiator':
         return '♨️';
       case 'speaker':
         return '🔊';

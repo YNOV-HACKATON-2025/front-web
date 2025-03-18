@@ -207,7 +207,7 @@ const Equipments = () => {
                   type="text"
                   name="type"
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ex: temperature, humidity, fan, light, heating, speaker"
+                  placeholder="Ex: temperature, humidity, fan, light, radiator, speaker"
                   required
                 />
               </div>
