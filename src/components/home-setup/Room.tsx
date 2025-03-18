@@ -28,7 +28,7 @@ const Room = ({ roomId }: RoomProps) => {
 
   const getSensorIcon = (type: string) => {
     switch (type) {
-      case 'temperature':
+      case 'thermometer':
         return '🌡️';
       case 'humidity':
         return '💧';
@@ -49,7 +49,7 @@ const Room = ({ roomId }: RoomProps) => {
 
   const getSensorColor = (type: string) => {
     switch (type) {
-      case 'temperature':
+      case 'thermometer':
         return 'bg-red-500';
       case 'humidity':
         return 'bg-blue-500';

@@ -37,6 +37,21 @@ const Equipments = () => {
   const [devices, setDevices] = useState<Sensor[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedSensor, setSelectedSensor] = useState<Sensor | null>(null);
+  const [newSensor, setNewSensor] = useState<NewSensor>({
+    name: "",
+    roomId: "",
+    type: "",
+    unit: "",
+    value: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewSensor((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const fetchDevices = async () => {
     try {
@@ -169,12 +184,17 @@ const Equipments = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
+                const type = formData.get("type") as string;
+                const value = ["radiator", "light"].includes(type)
+                  ? formData.get("value") === "on" ? "true" : "false"
+                  : (formData.get("value") as string);
+
                 const newSensor: NewSensor = {
                   name: formData.get("name") as string,
                   roomId: formData.get("roomId") as string,
-                  type: formData.get("type") as string,
+                  type,
                   unit: formData.get("unit") as string,
-                  value: formData.get("value") as string,
+                  value,
                 };
                 addSensor(newSensor);
                 setIsModalOpen(false);
@@ -187,6 +207,8 @@ const Equipments = () => {
                 <input
                   type="text"
                   name="name"
+                  value={newSensor.name}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ex: TempSensor1"
                   required
@@ -199,9 +221,12 @@ const Equipments = () => {
                 </label>
                 <select
                   name="roomId"
+                  value={newSensor.roomId}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
+                  <option value="" disabled>Sélectionnez une pièce</option>
                   {rooms.map((room) => (
                     <option key={room.id} value={room.id}>
                       {room.name}
@@ -214,13 +239,22 @@ const Equipments = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Type d'appareil
                 </label>
-                <input
-                  type="text"
+                <select
                   name="type"
+                  value={newSensor.type}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ex: temperature, humidity, fan, light, radiator, speaker"
                   required
-                />
+                >
+                  <option value="" disabled>Sélectionnez un type</option>
+                  <option value="camera">Caméra</option>
+                  <option value="radiator">Radiateur</option>
+                  <option value="humidity">Hygromètre</option>
+                  <option value="light">Lumière</option>
+                  <option value="fan">Ventilateur</option>
+                  <option value="speaker">Haut-parleur</option>
+                  <option value="thermometer">Thermomètre</option>
+                </select>
               </div>
 
               <div className="mb-4">
@@ -230,9 +264,10 @@ const Equipments = () => {
                 <input
                   type="text"
                   name="unit"
+                  value={newSensor.unit}
+                  onChange={handleInputChange}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ex: °C"
-                  required
                 />
               </div>
 
@@ -240,13 +275,32 @@ const Equipments = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Valeur
                 </label>
-                <input
-                  type="text"
-                  name="value"
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ex: 25"
-                  required
-                />
+                {["radiator", "light"].includes(newSensor.type) ? (
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="value"
+                      checked={newSensor.value === "true"}
+                      onChange={(e) => {
+                        setNewSensor((prev) => ({
+                          ...prev,
+                          value: e.target.checked ? "true" : "false",
+                        }));
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                ) : (
+                  <input
+                    type="text"
+                    name="value"
+                    value={newSensor.value}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex: 25"
+                  />
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
@@ -277,11 +331,16 @@ const Equipments = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
+                const type = formData.get("type") as string;
+                const value = ["radiator", "light"].includes(type)
+                  ? formData.get("value") === "on" ? "true" : "false"
+                  : (formData.get("value") as string);
+
                 const updatedData: UpdatedSensorData = {
                   name: formData.get("name") as string,
-                  type: formData.get("type") as string,
+                  type,
                   unit: formData.get("unit") as string,
-                  value: formData.get("value") as string,
+                  value,
                 };
                 updateSensor(selectedSensor.id, updatedData);
                 setIsEditModalOpen(false);
@@ -322,7 +381,6 @@ const Equipments = () => {
                   name="unit"
                   defaultValue={selectedSensor.unit}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
                 />
               </div>
 
@@ -330,13 +388,25 @@ const Equipments = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Valeur
                 </label>
-                <input
-                  type="text"
-                  name="value"
-                  defaultValue={selectedSensor.value}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
+                {["radiator", "light"].includes(selectedSensor.type) ? (
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="value"
+                      className="sr-only peer"
+                      defaultChecked={selectedSensor.value === "true"}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                ) : (
+                  <input
+                    type="text"
+                    name="value"
+                    defaultValue={selectedSensor.value}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
@@ -370,7 +440,7 @@ const Equipments = () => {
                 Nom appareil
               </th>
               <th scope="col" className="px-6 py-3">
-                Room ID
+                Pièce
               </th>
               <th scope="col" className="px-6 py-3">
                 Type
@@ -394,10 +464,16 @@ const Equipments = () => {
               >
                 <td className="px-6 py-4">{device.id}</td>
                 <td className="px-6 py-4">{device.name}</td>
-                <td className="px-6 py-4">{device.roomId}</td>
+                <td className="px-6 py-4">
+                  {rooms.find((room) => room.id === device.roomId)?.name || "Inconnu"}
+                </td>
                 <td className="px-6 py-4">{device.type}</td>
                 <td className="px-6 py-4">{device.unit}</td>
-                <td className="px-6 py-4">{device.value}</td>
+                <td className="px-6 py-4">
+                  {["radiator", "light"].includes(device.type)
+                    ? device.value === "true" ? "Allumé" : "Éteint"
+                    : device.value}
+                </td>
                 <td className="px-6 py-4">
                   <div className="flex gap-2">
                     <button
