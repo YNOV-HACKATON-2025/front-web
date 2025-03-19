@@ -185,7 +185,7 @@ const Equipments = () => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
                 const type = formData.get("type") as string;
-                const value = ["radiator", "light"].includes(type)
+                const value = ["radiator", "light", "camera", "fan"].includes(type)
                   ? formData.get("value") === "on" ? "true" : "false"
                   : (formData.get("value") as string);
 
@@ -276,7 +276,7 @@ const Equipments = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Valeur
                 </label>
-                {["radiator", "light"].includes(newSensor.type) ? (
+                {["radiator", "light", "camera", "fan"].includes(newSensor.type) ? (
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -333,7 +333,7 @@ const Equipments = () => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
                 const type = formData.get("type") as string;
-                const value = ["radiator", "light"].includes(type)
+                const value = ["radiator", "light", "camera", "fan"].includes(type)
                   ? formData.get("value") === "on" ? "true" : "false"
                   : (formData.get("value") as string);
 
@@ -459,7 +459,7 @@ const Equipments = () => {
                   <td className="px-6 py-3">{device.type}</td>
                   <td className="px-6 py-3">{device.unit}</td>
                   <td className="px-6 py-3">
-                    {["radiator", "light"].includes(device.type) ? (
+                    {["radiator", "light", "camera", "fan"].includes(device.type) ? (
                       <span className={`px-2 py-1 rounded-full text-xs ${device.value === "true" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
                         {device.value === "true" ? "Allumé" : "Éteint"}
                       </span>
