@@ -390,7 +390,7 @@ const Equipments = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Valeur
                 </label>
-                {["radiator", "light"].includes(selectedSensor.type) ? (
+                {["radiator", "light", "camera", "fan"].includes(selectedSensor.type) ? (
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
